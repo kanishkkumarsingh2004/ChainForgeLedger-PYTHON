@@ -4,7 +4,7 @@ def right_rotate(x, n):
     return ((x >> n) | (x << (32 - n))) & 0xFFFFFFFF
 
 
-def sha256(message: str) -> str:
+def sha256_hash(message: str) -> str:
     
     # Initial hash values (first 32 bits of the fractional parts of the square roots of the first 8 primes)
     h = [
@@ -92,4 +92,4 @@ def sha256(message: str) -> str:
 # Example
 if __name__ == "__main__":
     text = input("Enter text: ")
-    print("SHA-256:", sha256(text))
+    print("SHA-256:", sha256_hash(text))

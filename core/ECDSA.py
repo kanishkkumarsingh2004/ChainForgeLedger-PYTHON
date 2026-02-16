@@ -1,5 +1,5 @@
 import random
-from SHA_256 import sha256  # Your pure Python SHA256
+from .SHA_256 import sha256_hash  # Your pure Python SHA256
 
 # ==========================================
 # Curve Parameters (secp256k1)
@@ -80,7 +80,7 @@ def generate_keys():
 # ==========================================
 
 def sign(message, private_key):
-    z = int(sha256(message), 16) % n
+    z = int(sha256_hash(message), 16) % n
 
     while True:
         k = random.randrange(1, n)
@@ -108,7 +108,7 @@ def verify(message, signature, public_key):
     if not (1 <= r < n and 1 <= s < n):
         return False
 
-    z = int(sha256(message), 16) % n
+    z = int(sha256_hash(message), 16) % n
     s_inv = inverse_mod(s, n)
 
     u1 = (z * s_inv) % n

@@ -16,8 +16,14 @@ project_root = str(Path(__file__).parent.parent)
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from core.POW import ProofOfWork
-from core.POS import ProofOfStake
+from chainforgeledger import (
+    Blockchain,
+    Transaction,
+    ProofOfWork,
+    ProofOfStake,
+    ValidatorManager,
+    Validator
+)
 
 
 def test_pow_performance(difficulty=4, transactions=5):
@@ -33,29 +39,35 @@ def test_pow_performance(difficulty=4, transactions=5):
     """
     print(f"Testing PoW with difficulty {difficulty}, {transactions} transactions...")
     
-    pow_chain = ProofOfWork(difficulty=difficulty)
+    blockchain = Blockchain(difficulty=difficulty)
+    pow_consensus = ProofOfWork(blockchain, difficulty=difficulty, reward=50.0)
     
     # Add transactions
+    tx_list = []
     for i in range(transactions):
-        transaction = f"Tx{i+1}: User{random.randint(1,100)} -> User{random.randint(1,100)}"
-        pow_chain.add_transaction(transaction)
+        tx = Transaction(
+            sender=f"User{random.randint(1,100)}",
+            receiver=f"User{random.randint(1,100)}",
+            amount=random.uniform(1, 100)
+        )
+        tx_list.append(tx.to_dict())
     
     # Mine block and measure time
     start_time = time.time()
-    pow_chain.mine_block("pow_miner@example.com")
+    new_block = pow_consensus.mine_block(tx_list, "pow_miner@example.com")
     mining_time = time.time() - start_time
     
-    # Get last block info
-    last_block = pow_chain.chain[-1]
+    # Add block to chain
+    blockchain.add_block(new_block)
     
     return {
         "algorithm": "Proof-of-Work",
         "difficulty": difficulty,
         "transactions": transactions,
         "time": mining_time,
-        "hash": last_block.hash,
-        "nonce": last_block.nonce,
-        "valid": pow_chain.is_chain_valid()
+        "hash": new_block.hash,
+        "nonce": new_block.nonce,
+        "valid": pow_consensus.validate_block(new_block)
     }
 
 
@@ -73,34 +85,41 @@ def test_pos_performance(validators=4, transactions=5):
     print(f"Testing PoS with {validators} validators, {transactions} transactions...")
     
     # Create validators with random stakes
-    initial_validators = []
+    validator_manager = ValidatorManager()
     for i in range(validators):
         stake = random.randint(100, 500)
-        initial_validators.append((f"validator{i+1}", stake))
+        validator = Validator(f"validator{i+1}", stake)
+        validator_manager.add_validator(validator)
     
-    pos_chain = ProofOfStake(initial_validators, inflation_rate=0.02)
+    blockchain = Blockchain(difficulty=2)
+    pos_consensus = ProofOfStake(blockchain, validator_manager, reward=50.0)
     
     # Add transactions
+    tx_list = []
     for i in range(transactions):
-        transaction = f"Tx{i+1}: User{random.randint(1,100)} -> User{random.randint(1,100)}"
-        pos_chain.add_transaction(transaction)
+        tx = Transaction(
+            sender=f"User{random.randint(1,100)}",
+            receiver=f"User{random.randint(1,100)}",
+            amount=random.uniform(1, 100)
+        )
+        tx_list.append(tx.to_dict())
     
     # Forge block and measure time
     start_time = time.time()
-    pos_chain.forge_block()
+    new_block = pos_consensus.forge_block(tx_list)
     forging_time = time.time() - start_time
     
-    # Get last block info
-    last_block = pos_chain.chain[-1]
+    # Add block to chain
+    blockchain.add_block(new_block)
     
     return {
         "algorithm": "Proof-of-Stake",
         "validators": validators,
         "transactions": transactions,
         "time": forging_time,
-        "hash": last_block.hash,
-        "validator": last_block.validator.address,
-        "valid": pos_chain.is_chain_valid()
+        "hash": new_block.hash,
+        "validator": new_block.validator,
+        "valid": pos_consensus.validate_block(new_block)
     }
 
 

@@ -23,6 +23,38 @@ from chainforgeledger import (
     generate_keys,
     KeyPair
 )
+from chainforgeledger.consensus import FinalityManager, Checkpoint, Vote
+from chainforgeledger.core import (
+    TransactionReceipt,
+    LogEntry,
+    create_transaction_receipt,
+    LightClient,
+    BlockHeader,
+    ExecutionPipeline,
+    PipelineContext,
+    create_execution_pipeline,
+    default_plugins,
+    LoggingPlugin,
+    GasTrackingPlugin,
+    BlockProducer,
+    ProductionOptions,
+    ProductionResult,
+    create_block_producer
+)
+from chainforgeledger.runtime import (
+    EventSystem,
+    Event,
+    GasSystem,
+    GasConfig,
+    GasMetrics,
+    PluginSystem,
+    Plugin,
+    PluginInfo,
+    PluginConfig,
+    StateMachine,
+    StateSnapshot,
+    ExecutionResult
+)
 
 
 class TestChainForgeLedger(unittest.TestCase):
@@ -208,6 +240,145 @@ class TestChainForgeLedger(unittest.TestCase):
         block = blockchain.get_block_by_hash(genesis_block.hash)
         self.assertIsNotNone(block)
         self.assertEqual(block.index, 0)
+    
+    def test_finality_manager_creation(self):
+        """Test FinalityManager creation"""
+        fm = FinalityManager()
+        self.assertIsNotNone(fm)
+    
+    def test_checkpoint_creation(self):
+        """Test Checkpoint creation"""
+        checkpoint = Checkpoint(block_number=1, block_hash="0"*64, epoch=0, timestamp=0)
+        self.assertIsNotNone(checkpoint)
+        self.assertEqual(checkpoint.block_number, 1)
+    
+    def test_vote_creation(self):
+        """Test Vote creation"""
+        vote = Vote(block_number=1, validator_id="validator1", signature="0"*64)
+        self.assertIsNotNone(vote)
+        self.assertEqual(vote.block_number, 1)
+        self.assertEqual(vote.validator_id, "validator1")
+    
+    def test_transaction_receipt_creation(self):
+        """Test TransactionReceipt creation"""
+        receipt = create_transaction_receipt()
+        self.assertIsNotNone(receipt)
+        self.assertIsInstance(receipt, TransactionReceipt)
+    
+    def test_log_entry_creation(self):
+        """Test LogEntry creation"""
+        log = LogEntry(type="info", message="Test log")
+        self.assertIsNotNone(log)
+        self.assertEqual(log.type, "info")
+        self.assertEqual(log.message, "Test log")
+    
+    def test_light_client_creation(self):
+        """Test LightClient creation"""
+        client = LightClient()
+        self.assertIsNotNone(client)
+    
+    def test_block_header_creation(self):
+        """Test BlockHeader creation"""
+        header = BlockHeader(
+            index=1,
+            previous_hash="0"*64,
+            tx_root="0"*64,
+            state_root="0"*64,
+            receipt_root="0"*64,
+            validator="validator1",
+            timestamp=0,
+            hash="0"*64
+        )
+        self.assertIsNotNone(header)
+        self.assertEqual(header.index, 1)
+    
+    def test_execution_pipeline_creation(self):
+        """Test ExecutionPipeline creation"""
+        pipeline = create_execution_pipeline()
+        self.assertIsNotNone(pipeline)
+        self.assertIsInstance(pipeline, ExecutionPipeline)
+    
+    def test_pipeline_context_creation(self):
+        """Test PipelineContext creation"""
+        context = PipelineContext(block_hash="0"*64, block_number=1)
+        self.assertIsNotNone(context)
+        self.assertEqual(context.block_number, 1)
+    
+    def test_block_producer_creation(self):
+        """Test BlockProducer creation"""
+        producer = create_block_producer()
+        self.assertIsNotNone(producer)
+        self.assertIsInstance(producer, BlockProducer)
+    
+    def test_production_options_creation(self):
+        """Test ProductionOptions creation"""
+        options = ProductionOptions(max_block_size=2000000)
+        self.assertIsNotNone(options)
+        self.assertEqual(options.max_block_size, 2000000)
+    
+    def test_event_system_creation(self):
+        """Test EventSystem creation"""
+        events = EventSystem()
+        self.assertIsNotNone(events)
+    
+    def test_event_creation(self):
+        """Test Event creation"""
+        event = Event(event_type="block.created", data={"block_number": 1})
+        self.assertIsNotNone(event)
+        self.assertEqual(event.event_type, "block.created")
+    
+    def test_gas_system_creation(self):
+        """Test GasSystem creation"""
+        gas = GasSystem()
+        self.assertIsNotNone(gas)
+    
+    def test_gas_config_creation(self):
+        """Test GasConfig creation"""
+        config = GasConfig(block_gas_limit=20000000)
+        self.assertIsNotNone(config)
+        self.assertEqual(config.block_gas_limit, 20000000)
+    
+    def test_gas_metrics_creation(self):
+        """Test GasMetrics creation"""
+        metrics = GasMetrics(total_gas=10000000, used_gas=5000000)
+        self.assertIsNotNone(metrics)
+        self.assertEqual(metrics.total_gas, 10000000)
+        self.assertEqual(metrics.used_gas, 5000000)
+    
+    def test_plugin_system_creation(self):
+        """Test PluginSystem creation"""
+        plugins = PluginSystem()
+        self.assertIsNotNone(plugins)
+    
+    def test_plugin_info_creation(self):
+        """Test PluginInfo creation"""
+        info = PluginInfo(name="test-plugin", version="1.0.0", author="test", description="Test plugin", category="test")
+        self.assertIsNotNone(info)
+        self.assertEqual(info.name, "test-plugin")
+    
+    def test_plugin_config_creation(self):
+        """Test PluginConfig creation"""
+        config = PluginConfig(name="test-plugin", version="1.0.0", config={"key": "value"})
+        self.assertIsNotNone(config)
+        self.assertEqual(config.name, "test-plugin")
+    
+    def test_state_machine_creation(self):
+        """Test StateMachine creation"""
+        state_machine = StateMachine()
+        self.assertIsNotNone(state_machine)
+    
+    def test_state_snapshot_creation(self):
+        """Test StateSnapshot creation"""
+        snapshot = StateSnapshot(block_number=1, block_hash="0"*64, state_root="0"*64, timestamp=0)
+        self.assertIsNotNone(snapshot)
+        self.assertEqual(snapshot.block_number, 1)
+    
+    def test_execution_result_creation(self):
+        """Test ExecutionResult creation"""
+        result = ExecutionResult(success=True, state_root="0"*64, gas_used=1000, gas_limit=2000)
+        self.assertIsNotNone(result)
+        self.assertTrue(result.success)
+        self.assertEqual(result.gas_used, 1000)
 
 
 if __name__ == '__main__':

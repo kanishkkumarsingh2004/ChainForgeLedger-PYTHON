@@ -45,12 +45,17 @@ from chainforgeledger.core.lending import LendingPool
 from chainforgeledger.core.caching import BlockchainCache
 from chainforgeledger.core.difficulty import DifficultyAdjuster
 from chainforgeledger.core.serialization import BlockSerializer
+from chainforgeledger.core.receipt import TransactionReceipt, LogEntry, create_transaction_receipt
+from chainforgeledger.core.light_client import LightClient, BlockHeader
+from chainforgeledger.core.execution_pipeline import ExecutionPipeline, PipelineContext, create_execution_pipeline, default_plugins, LoggingPlugin, GasTrackingPlugin
+from chainforgeledger.core.block_producer import BlockProducer, ProductionOptions, ProductionResult, create_block_producer
 
 # Export consensus mechanisms
 from chainforgeledger.consensus.pow import ProofOfWork
 from chainforgeledger.consensus.pos import ProofOfStake
 from chainforgeledger.consensus.validator import Validator, ValidatorManager
 from chainforgeledger.consensus.slashing import SlashingMechanism
+from chainforgeledger.consensus.finality import FinalityManager, Checkpoint, Vote
 from chainforgeledger.consensus.interface import (
     ConsensusInterface,
     ProofOfWorkInterface,
@@ -59,6 +64,22 @@ from chainforgeledger.consensus.interface import (
     PBFTInterface,
     ConsensusFactory,
     ConsensusManager
+)
+
+# Export runtime modules
+from chainforgeledger.runtime import (
+    EventSystem,
+    Event,
+    GasSystem,
+    GasConfig,
+    GasMetrics,
+    PluginSystem,
+    Plugin,
+    PluginInfo,
+    PluginConfig,
+    StateMachine,
+    StateSnapshot,
+    ExecutionResult
 )
 
 # Export cryptographic utilities
@@ -115,12 +136,24 @@ __all__ = [
     "CrossChainBridge", "StakingPool", "LiquidityPool", "FeeDistributionSystem", 
     "ForkHandler", "ShardManager", "StatePruner", "LendingPool", 
     "BlockchainCache", "DifficultyAdjuster", "BlockSerializer",
+    "TransactionReceipt", "LogEntry", "create_transaction_receipt",
+    "LightClient", "BlockHeader",
+    "ExecutionPipeline", "PipelineContext", "create_execution_pipeline", 
+    "default_plugins", "LoggingPlugin", "GasTrackingPlugin",
+    "BlockProducer", "ProductionOptions", "ProductionResult", "create_block_producer",
 
     # Consensus
     "ProofOfWork", "ProofOfStake", "Validator", "ValidatorManager", 
-    "SlashingMechanism", "ConsensusInterface", "ProofOfWorkInterface", 
+    "SlashingMechanism", "FinalityManager", "Checkpoint", "Vote",
+    "ConsensusInterface", "ProofOfWorkInterface", 
     "ProofOfStakeInterface", "DelegatedProofOfStakeInterface", "PBFTInterface", 
     "ConsensusFactory", "ConsensusManager",
+
+    # Runtime
+    "EventSystem", "Event",
+    "GasSystem", "GasConfig", "GasMetrics",
+    "PluginSystem", "Plugin", "PluginInfo", "PluginConfig",
+    "StateMachine", "StateSnapshot", "ExecutionResult",
 
     # Crypto & Wallet
     "sha256_hash", "keccak256_hash", "generate_keys", "KeyPair", 
